@@ -6,7 +6,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * 
  * Assegnamento 4 del Laboratorio di Reti di Calcolatori A
  * A.A. 2019/2020
- * @author Mirko De Petra, 549105
+ * @author Mirko De Petra
  *
  */
 public class DirectoryQueue {

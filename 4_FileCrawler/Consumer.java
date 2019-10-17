@@ -24,7 +24,8 @@ public class Consumer extends Thread {
 			if (files != null)
 				for (File file : files) {
 					if (!file.isDirectory())
-						printInfo(file);
+						System.out.println("Path:          " + f.getPath());
+						//printInfo(file);
 				}
 		}
 	}
