@@ -2,31 +2,36 @@ import java.io.File;
 
 public class Consumer extends Thread { 
 	private DirectoryQueue queue;
+	private int id;
 	
-	public Consumer(DirectoryQueue queue) { 
+	public Consumer(DirectoryQueue queue, int id) { 
 		this.queue = queue;
+		this.id = id;
 	}
 	
 	public void run() {
-		while (!queue.isEmpty()) {
-			String s = queue.get();
-			if (s != null) {
-				File dir = new File(s);
-				crawl(dir);
-			}
+		while (!queue.isEnd()) {
+			this.get();
+		}
+		while(!queue.isEmpty()) {
+			this.get();
 		}
 	}
 	
-	public void crawl (File dir) {
-		if (dir.isDirectory()) {
-			//System.out.println("   DIRECTORY -> " + dir.getName());
-			File[] files = dir.listFiles();
-			if (files != null)
-				for (File file : files) {
-					if (!file.isDirectory())
-						System.out.println("Path:          " + f.getPath());
-						//printInfo(file);
-				}
+	public void get() {
+		String s = queue.get();
+		if (s != null) {
+			File dir = new File(s);
+			if (dir.isDirectory()) {
+				//System.out.println("   DIRECTORY -> " + dir.getName());
+				File[] files = dir.listFiles();
+				if (files != null)
+					for (File file : files) {
+						if (!file.isDirectory())
+							System.out.println("Thread " + this.id + " stampa " + dir.getName() + "\n   Path:   " + file.getPath());
+							//printInfo(file);
+					}
+			}
 		}
 	}
 	
