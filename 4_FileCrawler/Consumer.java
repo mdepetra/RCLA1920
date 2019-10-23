@@ -1,9 +1,19 @@
 import java.io.File;
 
+/**
+ * 
+ * Assegnamento 4 del Laboratorio di Reti di Calcolatori A
+ * A.A. 2019/2020
+ * @author Mirko De Petra, 549105
+ *
+ */
+
+// Classe che modellizza il thread Consumatore
 public class Consumer extends Thread { 
 	private DirectoryQueue queue;
 	private int id;
 	
+	// Costruttore
 	public Consumer(DirectoryQueue queue, int id) { 
 		this.queue = queue;
 		this.id = id;
@@ -11,35 +21,23 @@ public class Consumer extends Thread {
 	
 	public void run() {
 		while (!queue.isEnd()) {
-			this.get();
-		}
-		while(!queue.isEmpty()) {
-			this.get();
-		}
-	}
-	
-	public void get() {
-		String s = queue.get();
-		if (s != null) {
-			File dir = new File(s);
-			if (dir.isDirectory()) {
-				//System.out.println("   DIRECTORY -> " + dir.getName());
-				File[] files = dir.listFiles();
-				if (files != null)
-					for (File file : files) {
-						if (!file.isDirectory())
-							System.out.println("Thread " + this.id + " stampa " + dir.getName() + "\n   Path:   " + file.getPath());
-							//printInfo(file);
-					}
+			// Si prende un elemento dalla coda
+			String s = queue.get();
+			if (s != null) {
+				File dir = new File(s);
+				
+				// Si verifica che sia una directory
+				if (dir.isDirectory()) {
+					File[] files = dir.listFiles();
+					// Se ci sono file e non sono directory si stampa il loror path
+					if (files != null)
+						for (File file : files) {
+							if (!file.isDirectory())
+								System.out.println("Thread " + this.id + " stampa " + dir.getName() + "\n   Path:   " + file.getPath());
+						}
+				}
 			}
 		}
-	}
-	
-	private void printInfo(File f) {
-		System.out.println("Name:          " + f.getName());
-		System.out.println("Path:          " + f.getPath());
-		System.out.println("Last modified: " + f.lastModified());
-		System.out.println("Length:        " + f.length());
-		System.out.println();
+			
 	}
 }

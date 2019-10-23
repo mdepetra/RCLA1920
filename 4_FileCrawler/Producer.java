@@ -8,34 +8,33 @@ import java.io.File;
  *
  */
 
+// Classe che modellizza il thread Produttore
 public class Producer extends Thread {
 	private DirectoryQueue queue;
 	private File dir;
 	
+	// Costruttore
 	public Producer(DirectoryQueue queue, String dir) {
 		this.queue = queue;
 		this.dir = new File(dir);
 	}
 	
 	public void run(){
+		// Inserimento della directory principale nella coda
 		queue.put(this.dir.getPath());
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		File files[] = this.dir.listFiles();
 		traverseFolder(files);
+		
+		// Segnalazione della fine della produzione
 		this.queue.setEnd();
 	}
 	
+	// Funzione per l'esplorazione ricorsiva delle directory
 	private void traverseFolder(File[] files) {
 		if (files != null) {
 			for (File file : files) {
 				if (file.isDirectory()) {
 					queue.put(file.getPath());
-					
 					traverseFolder(file.listFiles());
 				}
 			}

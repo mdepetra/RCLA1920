@@ -12,11 +12,18 @@ public class MainClass {
 		//	filepath	(String) stringa che individua una directory D
 		
 		String filepath = args[0];
+		
+		// Creazione della coda per la comunicazione fra produttore e consumatori
 		DirectoryQueue queue = new DirectoryQueue(); 
+		
+		// Creazione e attivazione del Produttore
 		new Producer(queue, filepath).start();
 		
+		// Generatozione di un k random
 		int k = (int)((Math.random() * 5) + 1);
-		System.out.println("avvio "+k+" threads");
+		System.out.println("Avvio di "+k+" threads consumatori");
+		
+		// Creazione e attivazione di k Consumatori
 		for (int i=0; i<k; i++)
 			new Consumer(queue,i).start(); 
 	}
