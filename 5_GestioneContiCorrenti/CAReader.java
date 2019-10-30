@@ -1,66 +1,85 @@
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 /**
  * 
- * Assegnamento 4 del Laboratorio di Reti di Calcolatori A
+ * Assegnamento 5 del Laboratorio di Reti di Calcolatori A
  * A.A. 2019/2020
- * @author Mirko De Petra, 549105
+ * @author Mirko De Petra
  *
  */
 
 // Metodo che modelizza il thread lettore di conti correnti (current Account)
 public class CAReader extends Thread{
 
-	private MyQueue queue;
 	private String fileName;
+	private LinkedBlockingQueue<JSONObject> listaCA;
+	private JSONArray conti;
+	private boolean endFlag = false;
 	
 	// Costruttore
-	public CAReader(MyQueue queue, String fileName) {
-		this.queue = queue;
+	public CAReader(LinkedBlockingQueue<JSONObject> listaCA, String fileName) {
+		this.listaCA = listaCA;
 		this.fileName = fileName;
 	}
-	
+
 	public void run(){
 		
-		JSONParser parser = new JSONParser(); 
-		try {
-			Object obj = parser.parse(new FileReader(fileName)); 
-			JSONObject jsonObject = (JSONObject) obj;
-			String nameOfCountry = (String) jsonObject.get("Name");
-			
-		} catch (FileNotFoundException e) { 
-			e.printStackTrace(); 
-		} catch (IOException e) { 
-			e.printStackTrace(); 
-		} catch (ParseException e) { 
-			e.printStackTrace();
-		}
-		
-		// Inserimento della directory principale nella coda
-		queue.put(this.dir.getPath());
-		File files[] = this.dir.listFiles();
-		traverseFolder(files);
-		
-		// Segnalazione della fine della produzione
-		this.queue.setEnd();
-	}
-	
-	// Funzione per l'esplorazione ricorsiva delle directory
-	private void traverseFolder(File[] files) {
-		if (files != null) {
-			for (File file : files) {
-				if (file.isDirectory()) {
-					queue.put(file.getPath());
-					traverseFolder(file.listFiles());
-				}
+		this.conti = read(this.fileName);
+		while (!conti.isEmpty()) {
+			try {
+				JSONObject obj = (JSONObject) conti.remove(0);
+				listaCA.put(obj);
+				this.endFlag=true;
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
+	}
+	
+	private JSONArray read(String fileName) {
+		try {
+			FileChannel inChannel =  FileChannel.open(Paths.get(fileName), StandardOpenOption.READ);
+			String s = "";
+			ByteBuffer buffer = ByteBuffer.allocate(1024*1024*100);
+			long time1=System.currentTimeMillis();
+            boolean stop=false;
+	
+            while (!stop) {
+				int bytesRead = inChannel.read(buffer);
+				if (bytesRead == -1) stop = true;
+				buffer.flip();
+				while (buffer.hasRemaining())
+					s += StandardCharsets.US_ASCII.decode(buffer).toString();
+				buffer.clear();
+			}
+            
+			long time2=System.currentTimeMillis(); 
+			System.out.println(time2-time1 + "    " + stop);
+			inChannel.close();
+			JSONParser parser = new JSONParser(); 
+			
+			return (JSONArray) parser.parse(s);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		} 
+		return null;
+	}
+	
+	public boolean readNotEnd() {
+		return endFlag;
 	}
 }
